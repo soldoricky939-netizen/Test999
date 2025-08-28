@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>EVENTI SPORTIVI by A̷L̷C̷A̷C̷E̷R̷</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    /* --- LOADER --- */
+    #loader {
+      position: fixed;
+      inset: 0;
+      background: #0a0a0f;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      flex-direction: column;
+      color: #fff;
+      font-family: 'Bebas Neue', sans-serif;
+    }
+    #loader .emoji {
+      font-size: 60px;
+      animation: spin 1.2s linear infinite;
+    }
+    #loader .text {
+      margin-top: 16px;
+      font-size: 22px;
+      letter-spacing: 1px;
+      color: #c9aee9;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+
+    /* --- RESTO DEL CSS ORIGINALE --- */
+    :root {
+      --bg:#0a0a0f;
+      --panel:#1b0d29;
+      --text:#f5f5f5;
+      --muted:#c9aee9;
+      --violet:#6a0dad;
+      --purple:#4b0082;
+      --gold:#ffd700;
+    }
+    *{box-sizing:border-box;}
+    body {
+      font-family:'Poppins', system-ui, sans-serif;
+      background: var(--bg); color:var(--text);
+      margin:0; padding:0;
+    }
+    header {
+      text-align:center; padding:20px 16px;
+      font-size:40px; font-weight:700; letter-spacing:1px;
+      font-family:'Bebas Neue', sans-serif;
+      background: linear-gradient(90deg, var(--gold), var(--violet), var(--purple));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    }
+    .date { text-align:center; margin:6px 0 12px; font-size:16px; color:var(--muted); }
+    .counter { text-align:center; margin:6px 0 16px; font-size:18px; font-weight:600; color:var(--gold); font-family:'Bebas Neue', sans-serif; }
+    .actions { display:flex; gap:12px; justify-content:center; align-items:center; padding:6px 12px; }
+    button.refresh {
+      padding:10px 20px; font-size:16px; border:none; border-radius:10px;
+      background: linear-gradient(90deg, var(--violet), var(--purple));
+      color:#fff; cursor:pointer; font-weight:600;
+    }
+    .filters { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin:12px; font-family:'Bebas Neue', sans-serif; }
+    .filters label { display:flex; align-items:center; gap:6px; font-size:16px; cursor:pointer; }
+    input, select {
+      padding:10px 12px; font-size:16px; border-radius:10px;
+      border:1px solid #3b1e5f; background: #1a0f2f; color:#fff; outline:none;
+      font-family:'Poppins', sans-serif;
+    }
+    .italian-filter { display:flex; justify-content:center; margin:8px 0 16px; font-family:'Bebas Neue', sans-serif; }
+    .italian-filter label { display:flex; align-items:center; gap:6px; font-size:18px; cursor:pointer; }
+    .no-results { text-align:center; font-size:18px; color:#999; margin:30px 0; }
+    .match { background: var(--panel); margin:16px; padding:16px; border-radius:16px; box-shadow: 0 0 10px rgba(106,13,173,.4); outline:none; cursor:pointer; }
+    .title { display:flex; align-items:center; gap:10px; font-size:18px; font-weight:600; }
+    .title img { width:34px; height:34px; object-fit:contain; }
+    .emoji-fallback { font-size:26px; line-height:1; }
+    .time { font-size:14px; color:var(--muted); margin-top:4px; }
+    .sources { margin-top:12px; display:flex; gap:8px; align-items:center; }
+    .sources select{ flex:1; }
+    .open-btn { padding:10px 14px; border-radius:10px; border:1px solid #3b1e5f; background:#2a1452; color:#fff; cursor:pointer; font-weight:600; }
+    .open-btn:disabled{ opacity:.5; cursor:not-allowed; }
+    footer { text-align:center; margin:24px 0 32px; color:#bbb; font-size:14px; }
+    .highlight { outline: 3px solid gold !important; box-shadow: 0 0 12px gold !important; transition: outline 0.3s ease, box-shadow 0.3s ease; }
+  </style>
+</head>
+<body>
+  <!-- LOADER -->
+  <div id="loader">
+    <div class="emoji">⏳</div>
+    <div class="text">Caricamento eventi...</div>
+  </div>
+
+  <header>EVENTI SPORTIVI by A̷L̷C̷A̷C̷E̷R̷</header>
+  <div class="date" id="date"></div>
+  <div class="counter" id="counter"></div>
+
+  <div class="actions">
+    <button class="refresh" onclick="refreshPage()">🔄 Aggiorna Eventi</button>
+  </div>
+
+  <div class="filters">
+    <input type="text" id="search" placeholder="🔎 Cerca evento..." oninput="renderMatches()">
+    <select id="category" onchange="renderMatches()">
+      <option value="">🌍 Tutte le categorie</option>
+      <option value="football">⚽ Calcio</option>
+      <option value="basketball">🏀 Basket</option>
+      <option value="tennis">🎾 Tennis</option>
+      <option value="volleyball">🏐 Volley</option>
+      <option value="hockey">🏒 Hockey</option>
+      <option value="baseball">⚾ Baseball</option>
+      <option value="rugby">🏉 Rugby</option>
+      <option value="motorsport">🏎️ Motori</option>
+      <option value="boxing">🥊 Boxe</option>
+      <option value="mma">🥋 MMA</option>
+      <option value="cricket">🏏 Cricket</option>
+      <option value="handball">🤾 Pallamano</option>
+      <option value="cycling">🚴 Ciclismo</option>
+      <option value="golf">⛳ Golf</option>
+      <option value="esports">🎮 eSports</option>
+      <option value="billiards">🎱 Biliardo</option>
+      <option value="tabletennis">🏓 Ping Pong</option>
+      <option value="badminton">🏸 Badminton</option>
+      <option value="waterpolo">🤽 Pallanuoto</option>
+      <option value="skiing">🎿 Sci</option>
+      <option value="snowboard">🏂 Snowboard</option>
+      <option value="curling">🥌 Curling</option>
+      <option value="darts">🎯 Freccette</option>
+      <option value="diving">🤿 Tuffi</option>
+      <option value="swimming">🏊 Nuoto</option>
+      <option value="gymnastics">🤸 Ginnastica</option>
+      <option value="weightlifting">🏋️ Sollevamento</option>
+      <option value="climbing">🧗 Arrampicata</option>
+      <option value="archery">🏹 Tiro con l’arco</option>
+      <option value="bowling">🎳 Bowling</option>
+      <option value="equestrian">🐎 Equitazione</option>
+      <option value="lacrosse">🥍 Lacrosse</option>
+    </select>
+  </div>
+
+  <div class="italian-filter">
+    <label><input type="checkbox" id="italianOnly" onchange="renderMatches()">🇮🇹 Solo in italiano</label>
+  </div>
+
+  <div id="matches"></div>
+
+  <footer>Telegram: @Pacman1926</footer>
+
+  <script>
+    let allMatches = [];
+    let pendingCards = 0;
+    const categoryEmojis = { football:"⚽", basketball:"🏀", tennis:"🎾", volleyball:"🏐", hockey:"🏒", baseball:"⚾",
+      rugby:"🏉", motorsport:"🏎️", boxing:"🥊", mma:"🥋", cricket:"🏏", handball:"🤾", cycling:"🚴", golf:"⛳", esports:"🎮",
+      billiards:"🎱", tabletennis:"🏓", badminton:"🏸", waterpolo:"🤽", skiing:"🎿", snowboard:"🏂", curling:"🥌", darts:"🎯",
+      diving:"🤿", swimming:"🏊", gymnastics:"🤸", weightlifting:"🏋️", climbing:"🧗", archery:"🏹", bowling:"🎳", equestrian:"🐎", lacrosse:"🥍" };
+
+    function capFirst(s){ return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+
+    async function fetchJSON(url){
+      try{ const res = await fetch(url); if(!res.ok) throw new Error(res.status); return await res.json(); }
+      catch(e){ console.error("Errore fetch:", e); return null; }
+    }
+
+    async function loadMatches(){
+      showLoader();
+      const data = await fetchJSON("https://streamed.pk/api/matches/all-today");
+      allMatches = Array.isArray(data) ? data : [];
+      renderMatches();
+    }
+
+    function renderMatches(){
+      const search = (document.getElementById("search").value || "").toLowerCase();
+      const category = document.getElementById("category").value;
+      const italianOnly = document.getElementById("italianOnly").checked;
+      const container = document.getElementById("matches");
+      const counter = document.getElementById("counter");
+      container.innerHTML = "";
+
+      const filtered = allMatches.filter(m => {
+        const title = (m.title||"").toLowerCase();
+        if (search && !title.includes(search)) return false;
+        if (category && m.category !== category) return false;
+        if (italianOnly && !m._hasItalian) return false;
+        return true;
+      });
+
+      counter.textContent = `📊 Eventi trovati: ${filtered.length}`;
+      if(filtered.length === 0){ container.innerHTML = `<div class="no-results">NESSUN RISULTATO</div>`; hideLoader(); return; }
+
+      pendingCards = filtered.length;
+      filtered.forEach(match => createMatchCard(match, container));
+    }
+
+    function createMatchCard(match, container){
+      const card = document.createElement("div");
+      card.className = "match"; card.tabIndex = 0;
+      card.id = "match_" + (match.id || Math.random().toString(36).slice(2));
+
+      const title = document.createElement("div"); title.className = "title";
+      if (match.teams?.home?.badge){
+        const imgH = document.createElement("img");
+        imgH.src = `https://streamed.pk/api/images/badge/${match.teams.home.badge}.webp`;
+        imgH.alt = match.teams.home.name || "home"; title.appendChild(imgH);
+      } else {
+        const span = document.createElement("span"); span.className = "emoji-fallback";
+        span.textContent = categoryEmojis[match.category] || "🏆"; title.appendChild(span);
+      }
+      const text = document.createElement("span"); text.textContent = match.title || "Evento"; title.appendChild(text);
+      if (match.teams?.away?.badge){
+        const imgA = document.createElement("img");
+        imgA.src = `https://streamed.pk/api/images/badge/${match.teams.away.badge}.webp`;
+        imgA.alt = match.teams.away.name || "away"; title.appendChild(imgA);
+      } else {
+        const span = document.createElement("span"); span.className = "emoji-fallback";
+        span.textContent = categoryEmojis[match.category] || "🏆"; title.appendChild(span);
+      }
+      card.appendChild(title);
+
+      if (match.date){
+        const timeDiv = document.createElement("div");
+        timeDiv.className = "time";
+        const d = new Date(match.date);
+        const optsDate = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+        const optsTime = { hour:'2-digit', minute:'2-digit' };
+        let formatted = `${d.toLocaleDateString("it-IT", optsDate)} - ${d.toLocaleTimeString("it-IT", optsTime)}`;
+        timeDiv.textContent = capFirst(formatted);
+        card.appendChild(timeDiv);
+      }
+
+      const sourcesArea = document.createElement("div"); sourcesArea.className = "sources";
+      const select = document.createElement("select");
+      select.id = "sel_" + (match.id || Math.random().toString(36).slice(2));
+      sourcesArea.appendChild(select);
+      const openBtn = document.createElement("button");
+      openBtn.className = "open-btn"; openBtn.textContent = "Apri"; openBtn.disabled = true;
+      openBtn.onclick = () => {
+        const url = select.value; if(!url) return;
+        localStorage.setItem("scrollPos", window.scrollY);
+        localStorage.setItem("lastMatchCardId", card.id);
+        const w = window.open(url, "_blank", "noopener"); if (w) w.focus();
+      };
+      sourcesArea.appendChild(openBtn);
+      card.appendChild(sourcesArea);
+      container.appendChild(card);
+
+      // Evidenziazione ultima card selezionata
+      card.addEventListener("click", () => {
+        document.querySelectorAll(".match.highlight").forEach(c => c.classList.remove("highlight"));
+        card.classList.add("highlight");
+        localStorage.setItem("lastMatchCardId", card.id);
+      });
+
+      loadStreamsForMatch(match, select, openBtn, card);
+    }
+
+    async function loadStreamsForMatch(match, selectElem, openBtn, card){
+      selectElem.innerHTML = ""; let added = 0; let hasItalian = false;
+      if(Array.isArray(match.sources)){
+        for (const src of match.sources){
+          if(!src.source) continue;
+          const name = src.source.toLowerCase();
+          if(name.includes("intel") || name.includes("hotel")) continue;
+          const url = `https://streamed.pk/api/stream/${encodeURIComponent(src.source)}/${encodeURIComponent(src.id)}`;
+          const data = await fetchJSON(url); if(!Array.isArray(data)) continue;
+          data.forEach(str => {
+            const langNorm = String(str.language || "").toLowerCase().trim();
+            if (langNorm === "it" || langNorm === "ita" || langNorm.includes("italian")) hasItalian = true;
+            const opt = document.createElement("option");
+            opt.value = str.embedUrl; const quality = str.hd ? "HD" : "SD";
+            opt.textContent = `${String(src.source || "").toUpperCase()} • ${str.language || ""} • ${quality}`;
+            selectElem.appendChild(opt); added++;
+          });
+        }
+      }
+      match._hasItalian = hasItalian;
+      if (added === 0) { card.remove(); } else { openBtn.disabled = false; }
+      if (document.getElementById("italianOnly").checked && !match._hasItalian){ card.style.display = "none"; }
+      else { card.style.display = ""; }
+
+      pendingCards--;
+      if(pendingCards <= 0){ hideLoader(); }
+    }
+
+    function updateDate(){
+      const now = new Date();
+      const optsDate = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+      const optsTime = { hour:'2-digit', minute:'2-digit', second:'2-digit' };
+      let txt = `${now.toLocaleDateString("it-IT", optsDate)} - ${now.toLocaleTimeString("it-IT", optsTime)}`;
+      document.getElementById("date").textContent = capFirst(txt);
+    }
+    setInterval(updateDate, 1000); updateDate();
+
+    function showLoader(){ document.getElementById("loader").style.display = "flex"; }
+    function hideLoader(){ document.getElementById("loader").style.display = "none"; }
+
+    function refreshPage(){
+      localStorage.setItem("scrollPos", window.scrollY);
+      const highlighted = document.querySelector(".match.highlight");
+      if(highlighted){ localStorage.setItem("lastMatchCardId", highlighted.id); }
+      location.reload();
+    }
+
+    window.addEventListener("load", () => {
+      const saved = localStorage.getItem("scrollPos");
+      if(saved){ window.scrollTo(0, parseInt(saved)); }
+      const cardId = localStorage.getItem("lastMatchCardId");
+      if(cardId){
+        const card = document.getElementById(cardId);
+        if(card){
+          card.scrollIntoView({behavior:"smooth", block:"center"});
+          card.classList.add("highlight");
+        }
+      }
+    });
+
+    loadMatches();
+  </script>
+</body>
+</html>
